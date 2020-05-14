@@ -1,0 +1,45 @@
+CREATE (a:Station {name: 'Uneda', 		latitude: 51.5308, longitude: -0.1238}),
+       (b:Station {name: 'Nova',                    latitude: 51.5282, longitude: -0.1337}),
+       (c:Station {name: 'San Agustin',               latitude: 51.5392, longitude: -0.1426}),
+       (d:Station {name: 'Bilingue',       		latitude: 51.5342, longitude: -0.1387}),
+       (e:Station {name: 'Fidel Hidalgo',              latitude: 51.5507, longitude: -0.1402}),
+	(f:Station {name: 'San Andres',              latitude: 51.5507, longitude: -0.1402}),
+	(g:Station {name: 'Antonio Avila',              latitude: 51.5507, longitude: -0.1402}),
+	(h:Station {name: 'Liceo Americano Catolico',              latitude: 51.5507, longitude: -0.1402}),
+	(i:Station {name: 'Cedci',              latitude: 51.5507, longitude: -0.1402}),
+	(j:Station {name: 'Benigno Malo',              latitude: 51.5507, longitude: -0.1402}),
+	(k:Station {name: 'Garaicao',              latitude: 51.5507, longitude: -0.1402}),
+	(l:Station {name: 'Herlina Toral',              latitude: 51.5507, longitude: -0.1402}),
+	
+	(a)-[:CONNECTION {time: 11}]->(c),
+	(a)-[:CONNECTION {time: 10}]->(f),
+	(a)-[:CONNECTION {time: 11}]->(b),
+	(b)-[:CONNECTION {time: 11}]->(d),
+ 	(c)-[:CONNECTION {time: 12}]->(e),	
+ 	(d)-[:CONNECTION {time: 8}]->(i),
+	(f)-[:CONNECTION {time:10 }]->(h),
+	(e)-[:CONNECTION {time: 10}]->(g),
+	(e)-[:CONNECTION {time: 13}]->(f),
+	(f)-[:CONNECTION {time: 12}]->(d),
+	(g)-[:CONNECTION {time: 4}]->(h),
+	(h)-[:CONNECTION {time: 8}]->(i),
+	(g)-[:CONNECTION {time: 10}]->(j),
+	(j)-[:CONNECTION {time: 7}]->(l),
+	(h)-[:CONNECTION {time: 2}]->(l),
+	(i)-[:CONNECTION {time: 6}]->(k),
+	(k)-[:CONNECTION {time: 8}]->(l)
+
+
+
+MATCH (start:Station {name: "Uneda"}), (end:Station {name: "Herlina Toral"})
+CALL gds.alpha.shortestPath.astar.stream({
+  nodeQuery: 'MATCH (p:Station) RETURN id(p) AS id',
+  relationshipQuery: 'MATCH (p1:Station)-[r:CONNECTION]->(p2:Station) RETURN id(p1) AS source, id(p2) AS target, r.time AS weight',
+  startNode: start,
+  endNode: end,
+ relationshipWeightProperty: 'weight',
+  propertyKeyLat: 'latitude',
+  propertyKeyLat: 'longitude'
+})
+YIELD nodeId, cost
+RETURN gds.util.asNode(nodeId).name AS station, cost
